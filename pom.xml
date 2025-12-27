@@ -22,6 +22,8 @@
     <modules>
         <module>com.keksss.abap.ai.core</module>
         <module>com.keksss.abap.ai.ui</module>
+        <module>com.keksss.abap.ai.feature</module>
+        <module>com.keksss.abap.ai.repository</module>
     </modules>
 
     <build>

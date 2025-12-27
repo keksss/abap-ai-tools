@@ -3,7 +3,21 @@ Bundle-ManifestVersion: 2
 Bundle-Name: ABAP AI Tools Core
 Bundle-SymbolicName: com.keksss.abap.ai.core
 Bundle-Version: 1.0.0.qualifier
-Export-Package: com.keksss.abap.ai.core
+Export-Package: com.keksss.abap.ai.core,
+ org.json,
+ com.google.api.client.genai,
+ com.google.api.client.genai.common,
+ com.google.api.client.genai.generativelanguage,
+ com.google.api.client.http,
+ com.google.api.client.http.gson,
+ com.google.gson,
+ com.google.common.base,
+ com.google.common.collect,
+ org.apache.http,
+ org.apache.http.client,
+ org.apache.http.impl.client,
+ com.fasterxml.jackson.core,
+ com.fasterxml.jackson.databind
 Bundle-Activator: com.keksss.abap.ai.core.Activator
 Bundle-Vendor: KEKSSS
 Require-Bundle: org.eclipse.core.runtime,
