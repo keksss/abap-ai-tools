@@ -50,7 +50,7 @@
             locationURI="popup:com.sap.adt.feedreader.ui.FeedsView?after=additions">
          <command
                commandId="com.keksss.abap.ai.ui.commands.analyzeWithAi"
-               label="Analyze with AI"
+               label="Explain Dump (AI based)"
                style="push">
             <visibleWhen>
                <with variable="selection">
