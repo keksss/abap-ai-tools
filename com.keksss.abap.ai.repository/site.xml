@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <site>
-   <feature url="features/com.keksss.abap.ai.feature_1.0.0.202512280223.jar" id="com.keksss.abap.ai.feature" version="1.0.0.202512280223">
+   <feature url="features/com.keksss.abap.ai.feature_1.0.0.202512280240.jar" id="com.keksss.abap.ai.feature" version="1.0.0.202512280240">
       <category name="com.keksss.abap.ai.category"/>
    </feature>
    <category-def name="com.keksss.abap.ai.category" label="ABAP AI Tools">
