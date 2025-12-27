@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    
+    <groupId>com.keksss.abap.ai</groupId>
+    <artifactId>parent</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+    
+    <name>ABAP AI Tools Parent</name>
+    <description>Parent POM for ABAP AI Tools Eclipse Plugin</description>
+
+    <properties>
+        <tycho.version>4.0.10</tycho.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
+    </properties>
+
+    <modules>
+        <module>com.keksss.abap.ai.core</module>
+        <module>com.keksss.abap.ai.ui</module>
+    </modules>
+
+    <build>
+        <plugins>
+            <!-- Tycho Maven Plugin -->
+            <plugin>
+                <groupId>org.eclipse.tycho</groupId>
+                <artifactId>tycho-maven-plugin</artifactId>
+                <version>${tycho.version}</version>
+                <extensions>true</extensions>
+            </plugin>
+
+            <!-- Target Platform Configuration -->
+            <plugin>
+                <groupId>org.eclipse.tycho</groupId>
+                <artifactId>target-platform-configuration</artifactId>
+                <version>${tycho.version}</version>
+                <configuration>
+                    <environments>
+                        <environment>
+                            <os>win32</os>
+                            <ws>win32</ws>
+                            <arch>x86_64</arch>
+                        </environment>
+                        <environment>
+                            <os>linux</os>
+                            <ws>gtk</ws>
+                            <arch>x86_64</arch>
+                        </environment>
+                        <environment>
+                            <os>macosx</os>
+                            <ws>cocoa</ws>
+                            <arch>x86_64</arch>
+                        </environment>
+                    </environments>
+                    <target>
+                        <artifact>
+                            <groupId>org.eclipse.platform</groupId>
+                            <artifactId>org.eclipse.sdk.ide</artifactId>
+                            <version>4.33.0</version>
+                        </artifact>
+                    </target>
+                </configuration>
+            </plugin>
+
+            <!-- Tycho Compiler Plugin -->
+            <plugin>
+                <groupId>org.eclipse.tycho</groupId>
+                <artifactId>tycho-compiler-plugin</artifactId>
+                <version>${tycho.version}</version>
+                <configuration>
+                    <source>21</source>
+                    <target>21</target>
+                    <useProjectSettings>false</useProjectSettings>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <repositories>
+        <repository>
+            <id>eclipse-2024-09</id>
+            <layout>p2</layout>
+            <url>https://download.eclipse.org/releases/2024-09</url>
+        </repository>
+    </repositories>
+</project>
