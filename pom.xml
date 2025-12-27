@@ -59,13 +59,7 @@
                             <arch>x86_64</arch>
                         </environment>
                     </environments>
-                    <target>
-                        <artifact>
-                            <groupId>org.eclipse.platform</groupId>
-                            <artifactId>org.eclipse.sdk.ide</artifactId>
-                            <version>4.33.0</version>
-                        </artifact>
-                    </target>
+
                 </configuration>
             </plugin>
 
