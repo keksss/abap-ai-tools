@@ -32,7 +32,13 @@ public class AbapDumpAnalyzer {
         String prompt = constructAnalysisPrompt(dumpContent);
 
         // Call Google AI
-        return aiClient.analyzeText(apiKey, prompt);
+        AnalysisResult result = aiClient.analyzeText(apiKey, prompt);
+
+        if (result.isSuccess()) {
+            return AnalysisResult.success(result.getAnalysisText() + "\n\nOriginal Dump Content:\n" + dumpContent);
+        }
+
+        return result;
     }
 
     /**

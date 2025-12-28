@@ -8,6 +8,9 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
+import java.net.URI;
+import org.eclipse.core.filesystem.EFS;
+import org.eclipse.core.filesystem.IFileStore;
 
 public class AnalyzeWithAiHandler extends AbstractHandler {
 
@@ -31,6 +34,84 @@ public class AnalyzeWithAiHandler extends AbstractHandler {
                     title = (String) getTitleMethod.invoke(firstElement);
                 } catch (Exception e) {
                     title = firstElement.toString();
+                }
+
+                // Get content using reflection
+                String content = "";
+
+                // Try Adaptation to IFile or IStorage
+                try {
+                    // Try adapting to IFile
+                    org.eclipse.core.resources.IFile file = org.eclipse.core.runtime.Platform.getAdapterManager()
+                            .getAdapter(firstElement, org.eclipse.core.resources.IFile.class);
+                    if (file == null && firstElement instanceof org.eclipse.core.runtime.IAdaptable) {
+                        file = ((org.eclipse.core.runtime.IAdaptable) firstElement)
+                                .getAdapter(org.eclipse.core.resources.IFile.class);
+                    }
+
+                    if (file != null) {
+                        try (java.io.InputStream is = file.getContents()) {
+                            byte[] bytes = is.readAllBytes();
+                            content = new String(bytes, java.nio.charset.StandardCharsets.UTF_8);
+                        }
+                    } else {
+                        // Try adapting to IStorage
+                        org.eclipse.core.resources.IStorage storage = org.eclipse.core.runtime.Platform
+                                .getAdapterManager()
+                                .getAdapter(firstElement, org.eclipse.core.resources.IStorage.class);
+                        if (storage == null && firstElement instanceof org.eclipse.core.runtime.IAdaptable) {
+                            storage = ((org.eclipse.core.runtime.IAdaptable) firstElement)
+                                    .getAdapter(org.eclipse.core.resources.IStorage.class);
+                        }
+
+                        if (storage != null) {
+                            try (java.io.InputStream is = storage.getContents()) {
+                                byte[] bytes = is.readAllBytes();
+                                content = new String(bytes, java.nio.charset.StandardCharsets.UTF_8);
+                            }
+                        }
+                    }
+
+                    // Fallback: Check for "getPreview()" or similar method on the entry directly if
+                    // adaptation fails
+                    if (content.isEmpty()) {
+                        // Check for getSummary() again but parse it better if it's HTML
+                        java.lang.reflect.Method getSummaryMethod = firstElement.getClass().getMethod("getSummary");
+                        Object summaryObj = getSummaryMethod.invoke(firstElement);
+                        if (summaryObj != null) {
+                            // If it returns Content object
+                            try {
+                                java.lang.reflect.Method getValueMethod = summaryObj.getClass().getMethod("getValue");
+                                String val = (String) getValueMethod.invoke(summaryObj);
+                                if (val != null)
+                                    content = val;
+                            } catch (Exception ex) {
+                                content = summaryObj.toString();
+                            }
+                        }
+                    }
+
+                } catch (Exception e) {
+                    // Ignore errors
+                }
+
+                // If content is still empty, fallback to description (just in case)
+                if (content == null || content.isEmpty()) {
+                    try {
+                        java.lang.reflect.Method getDescriptionMethod = firstElement.getClass()
+                                .getMethod("getDescription");
+                        Object descObj = getDescriptionMethod.invoke(firstElement);
+                        if (descObj != null) {
+                            // ... existing fallback ...
+                            try {
+                                java.lang.reflect.Method getValueMethod = descObj.getClass().getMethod("getValue");
+                                content = (String) getValueMethod.invoke(descObj);
+                            } catch (Exception ex) {
+                                content = descObj.toString();
+                            }
+                        }
+                    } catch (Exception ignored) {
+                    }
                 }
 
                 // Implement AI analysis logic
@@ -57,7 +138,8 @@ public class AnalyzeWithAiHandler extends AbstractHandler {
                     // simple logic for this step
                     // or better, use a Job to not block UI.
 
-                    final String prompt = "Analyze this ABAP feed entry: " + title;
+                    final String prompt = "Analyze this ABAP feed entry:\n\nTitle: " + title + "\n\nContent:\n"
+                            + content;
                     final String finalTitle = title;
 
                     new org.eclipse.core.runtime.jobs.Job("AI Analysis") {
