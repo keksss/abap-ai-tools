@@ -39,6 +39,15 @@ public class AbapDumpAnalyzer {
      * Constructs a detailed prompt for ABAP dump analysis
      */
     private String constructAnalysisPrompt(String dumpContent) {
+        String customPrompt = PreferenceHelper.getDumpAnalyzerPrompt();
+
+        if (customPrompt != null && !customPrompt.trim().isEmpty()) {
+            // Use custom prompt from preferences, replacing placeholder
+            return customPrompt.replace("{dump_content}", dumpContent);
+        }
+
+        // Fallback to hardcoded default if preference is missing (though Initializer
+        // should set it)
         StringBuilder prompt = new StringBuilder();
 
         prompt.append("You are an expert ABAP developer analyzing a runtime dump/error.\n\n");

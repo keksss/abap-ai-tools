@@ -14,6 +14,12 @@
             id="com.keksss.abap.ai.ui.preferences.MainPage"
             name="ABAP AI Tools">
       </page>
+      <page
+            category="com.keksss.abap.ai.ui.preferences.MainPage"
+            class="com.keksss.abap.ai.ui.preferences.DumpAnalyzerPreferencePage"
+            id="com.keksss.abap.ai.ui.preferences.DumpAnalyzerPreferencePage"
+            name="Dump Analyser">
+      </page>
    </extension>
    <extension
          point="org.eclipse.ui.commands">

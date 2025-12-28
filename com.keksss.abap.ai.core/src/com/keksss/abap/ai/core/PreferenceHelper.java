@@ -29,6 +29,8 @@ public class PreferenceHelper {
         }
     }
 
+    private static final String DUMP_ANALYZER_PROMPT_PREFERENCE = "dumpAnalyzerPrompt";
+
     /**
      * Retrieves the Google AI Model from preferences
      * 
@@ -42,6 +44,22 @@ public class PreferenceHelper {
         } catch (Exception e) {
             System.err.println("Error retrieving Model from preferences: " + e.getMessage());
             return DEFAULT_MODEL;
+        }
+    }
+
+    /**
+     * Retrieves the Dump Analyzer System Prompt from preferences
+     * 
+     * @return Custom prompt or null if not set (should rely on default in UI, but
+     *         here we can return null to fallback)
+     */
+    public static String getDumpAnalyzerPrompt() {
+        try {
+            Preferences preferences = InstanceScope.INSTANCE.getNode(UI_PLUGIN_ID);
+            return preferences.get(DUMP_ANALYZER_PROMPT_PREFERENCE, null);
+        } catch (Exception e) {
+            System.err.println("Error retrieving Dump Analyzer Prompt from preferences: " + e.getMessage());
+            return null;
         }
     }
 
