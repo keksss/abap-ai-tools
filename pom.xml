@@ -17,6 +17,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
+        <maven.build.timestamp.format>yyyyMMddHHmm</maven.build.timestamp.format>
     </properties>
 
     <modules>
@@ -42,6 +43,7 @@
                 <artifactId>target-platform-configuration</artifactId>
                 <version>${tycho.version}</version>
                 <configuration>
+
                     <environments>
                         <environment>
                             <os>win32</os>
@@ -72,6 +74,16 @@
                     <source>21</source>
                     <target>21</target>
                     <useProjectSettings>false</useProjectSettings>
+                </configuration>
+            </plugin>
+
+            <!-- Tycho Packaging Plugin -->
+            <plugin>
+                <groupId>org.eclipse.tycho</groupId>
+                <artifactId>tycho-packaging-plugin</artifactId>
+                <version>${tycho.version}</version>
+                <configuration>
+                    <format>yyyyMMdd-HHmm</format>
                 </configuration>
             </plugin>
         </plugins>
