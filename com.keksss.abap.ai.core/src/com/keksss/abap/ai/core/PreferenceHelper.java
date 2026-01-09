@@ -72,4 +72,97 @@ public class PreferenceHelper {
         String apiKey = getGoogleAiApiKey();
         return apiKey != null && !apiKey.trim().isEmpty();
     }
+
+    // ========== New Multi-Provider Configuration ==========
+
+    private static final String LLM_PROVIDER_PREFERENCE = "llmProvider";
+    private static final String LLM_API_KEY_PREFERENCE = "llmApiKey";
+    private static final String LLM_MODEL_PREFERENCE = "llmModel";
+    private static final String LLM_BASE_URL_PREFERENCE = "llmBaseUrl";
+    private static final String LLM_TEMPERATURE_PREFERENCE = "llmTemperature";
+    private static final String LLM_MAX_TOKENS_PREFERENCE = "llmMaxTokens";
+
+    /**
+     * Gets the complete LLM configuration from preferences
+     * 
+     * @return LlmConfig object with all settings
+     */
+    public static LlmConfig getLlmConfig() {
+        try {
+            Preferences preferences = InstanceScope.INSTANCE.getNode(UI_PLUGIN_ID);
+
+            // Get provider (with backward compatibility)
+            String providerStr = preferences.get(LLM_PROVIDER_PREFERENCE, null);
+            LlmProvider provider;
+
+            if (providerStr == null || providerStr.isEmpty()) {
+                // Migration: check if old Google AI settings exist
+                String oldApiKey = preferences.get(API_KEY_PREFERENCE, null);
+                if (oldApiKey != null && !oldApiKey.isEmpty()) {
+                    provider = LlmProvider.GOOGLE_AI;
+                } else {
+                    provider = LlmProvider.GOOGLE_AI; // Default
+                }
+            } else {
+                provider = LlmProvider.fromString(providerStr);
+            }
+
+            // Get API key (with backward compatibility)
+            String apiKey = preferences.get(LLM_API_KEY_PREFERENCE, null);
+            if (apiKey == null || apiKey.isEmpty()) {
+                // Try old preference for migration
+                apiKey = preferences.get(API_KEY_PREFERENCE, "");
+            }
+
+            // Get model (with backward compatibility)
+            String model = preferences.get(LLM_MODEL_PREFERENCE, null);
+            if (model == null || model.isEmpty()) {
+                // Try old preference for migration
+                model = preferences.get(MODEL_PREFERENCE, null);
+                if (model == null || model.isEmpty()) {
+                    model = getDefaultModel(provider);
+                }
+            }
+
+            String baseUrl = preferences.get(LLM_BASE_URL_PREFERENCE, null);
+            double temperature = preferences.getDouble(LLM_TEMPERATURE_PREFERENCE, 0.7);
+            int maxTokens = preferences.getInt(LLM_MAX_TOKENS_PREFERENCE, 2048);
+
+            return new LlmConfig.Builder()
+                    .provider(provider)
+                    .apiKey(apiKey != null ? apiKey : "")
+                    .model(model)
+                    .baseUrl(baseUrl)
+                    .temperature(temperature)
+                    .maxTokens(maxTokens)
+                    .build();
+
+        } catch (Exception e) {
+            System.err.println("Error retrieving LLM config from preferences: " + e.getMessage());
+            e.printStackTrace();
+            // Return default config
+            return new LlmConfig.Builder().build();
+        }
+    }
+
+    /**
+     * Get default model name for a given provider
+     * 
+     * @param provider LLM provider
+     * @return default model name
+     */
+    private static String getDefaultModel(LlmProvider provider) {
+        switch (provider) {
+            case GOOGLE_AI:
+                return "gemini-1.5-flash";
+            case OPENAI:
+                return "gpt-4o-mini";
+            case ANTHROPIC:
+                return "claude-3-5-sonnet-20241022";
+            case OLLAMA:
+                return "llama2";
+            default:
+                return "gemini-1.5-flash";
+        }
+    }
 }

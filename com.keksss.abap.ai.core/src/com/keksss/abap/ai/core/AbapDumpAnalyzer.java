@@ -1,14 +1,14 @@
 package com.keksss.abap.ai.core;
 
 /**
- * Service for analyzing ABAP dumps using Google AI
+ * Service for analyzing ABAP dumps using configured LLM
  */
 public class AbapDumpAnalyzer {
 
-    private final GoogleAiClient aiClient;
+    private final LlmClient aiClient;
 
     public AbapDumpAnalyzer() {
-        this.aiClient = new GoogleAiClient();
+        this.aiClient = new LlmClient();
     }
 
     /**
@@ -18,12 +18,14 @@ public class AbapDumpAnalyzer {
      * @return Analysis result containing AI insights
      */
     public AnalysisResult analyzeDump(String dumpContent) {
-        // Get API key from preferences
-        String apiKey = PreferenceHelper.getGoogleAiApiKey();
+        // Get LLM configuration
+        LlmConfig config = PreferenceHelper.getLlmConfig();
 
-        if (apiKey == null || apiKey.trim().isEmpty()) {
+        // Check if API key is configured (if required by provider)
+        if (config.getProvider().requiresApiKey() &&
+                (config.getApiKey() == null || config.getApiKey().trim().isEmpty())) {
             return AnalysisResult.failure(
-                    "Google AI API key is not configured.\n\n" +
+                    "LLM API key is not configured for " + config.getProvider().getDisplayName() + ".\n\n" +
                             "Please configure it in:\n" +
                             "Window -> Preferences -> ABAP AI Tools");
         }
@@ -31,8 +33,8 @@ public class AbapDumpAnalyzer {
         // Construct a specialized prompt for ABAP dump analysis
         String prompt = constructAnalysisPrompt(dumpContent);
 
-        // Call Google AI
-        AnalysisResult result = aiClient.analyzeText(apiKey, prompt);
+        // Call LLM through client
+        AnalysisResult result = aiClient.analyzeText(prompt);
 
         if (result.isSuccess()) {
             return AnalysisResult.success(result.getAnalysisText() + "\n\nOriginal Dump Content:\n" + dumpContent);
