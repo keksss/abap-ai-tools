@@ -15,4 +15,100 @@
 
     <name>ABAP AI Tools Core</name>
     <description>Core module for ABAP AI tools Eclipse plugin</description>
+
+    <build>
+        <plugins>
+            <!-- Maven Dependency Plugin to copy external JARs to lib folder -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>3.8.1</version>
+                <executions>
+                    <execution>
+                        <id>copy-dependencies</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <!-- OpenAI4j - Required by langchain4j-open-ai -->
+                                <artifactItem>
+                                    <groupId>dev.ai4j</groupId>
+                                    <artifactId>openai4j</artifactId>
+                                    <version>0.27.0</version>
+                                    <outputDirectory>${project.basedir}/lib</outputDirectory>
+                                </artifactItem>
+                                <!-- JTokkit - Required by langchain4j-open-ai for tokenization -->
+                                <artifactItem>
+                                    <groupId>com.knuddels</groupId>
+                                    <artifactId>jtokkit</artifactId>
+                                    <version>1.1.0</version>
+                                    <outputDirectory>${project.basedir}/lib</outputDirectory>
+                                </artifactItem>
+                                <!-- OkHttp & Okio - Transitive deps for openai4j -->
+                                <artifactItem>
+                                    <groupId>com.squareup.okhttp3</groupId>
+                                    <artifactId>okhttp</artifactId>
+                                    <version>4.12.0</version>
+                                    <outputDirectory>${project.basedir}/lib</outputDirectory>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>com.squareup.okio</groupId>
+                                    <artifactId>okio-jvm</artifactId>
+                                    <version>3.6.0</version>
+                                    <outputDirectory>${project.basedir}/lib</outputDirectory>
+                                </artifactItem>
+                                <!-- Retrofit - Required by openai4j -->
+                                <artifactItem>
+                                    <groupId>com.squareup.retrofit2</groupId>
+                                    <artifactId>retrofit</artifactId>
+                                    <version>2.9.0</version>
+                                    <outputDirectory>${project.basedir}/lib</outputDirectory>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>com.squareup.retrofit2</groupId>
+                                    <artifactId>converter-gson</artifactId>
+                                    <version>2.9.0</version>
+                                    <outputDirectory>${project.basedir}/lib</outputDirectory>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>com.squareup.retrofit2</groupId>
+                                    <artifactId>converter-jackson</artifactId>
+                                    <version>2.9.0</version>
+                                    <outputDirectory>${project.basedir}/lib</outputDirectory>
+                                </artifactItem>
+                                <!-- Jackson - Required by openai4j -->
+                                <artifactItem>
+                                    <groupId>com.fasterxml.jackson.core</groupId>
+                                    <artifactId>jackson-databind</artifactId>
+                                    <version>2.16.1</version>
+                                    <outputDirectory>${project.basedir}/lib</outputDirectory>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>com.fasterxml.jackson.core</groupId>
+                                    <artifactId>jackson-core</artifactId>
+                                    <version>2.16.1</version>
+                                    <outputDirectory>${project.basedir}/lib</outputDirectory>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>com.fasterxml.jackson.core</groupId>
+                                    <artifactId>jackson-annotations</artifactId>
+                                    <version>2.16.1</version>
+                                    <outputDirectory>${project.basedir}/lib</outputDirectory>
+                                </artifactItem>
+                                <!-- Kotlin - Required by OkHttp 4.x -->
+                                <artifactItem>
+                                    <groupId>org.jetbrains.kotlin</groupId>
+                                    <artifactId>kotlin-stdlib</artifactId>
+                                    <version>1.9.20</version>
+                                    <outputDirectory>${project.basedir}/lib</outputDirectory>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 </project>

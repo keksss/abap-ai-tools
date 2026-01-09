@@ -11,6 +11,10 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import java.net.URI;
 import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileStore;
+import com.keksss.abap.ai.ui.preferences.PreferenceConstants;
+import org.eclipse.core.runtime.preferences.InstanceScope;
+import org.eclipse.ui.preferences.ScopedPreferenceStore;
+import org.eclipse.jface.preference.IPreferenceStore;
 
 public class AnalyzeWithAiHandler extends AbstractHandler {
 
@@ -114,12 +118,13 @@ public class AnalyzeWithAiHandler extends AbstractHandler {
                     }
                 }
 
-                // Implement AI analysis logic
-                String apiKey = com.keksss.abap.ai.core.PreferenceHelper.getGoogleAiApiKey();
+                // Check LLM configuration
+                com.keksss.abap.ai.core.LlmConfig config = com.keksss.abap.ai.core.PreferenceHelper.getLlmConfig();
 
-                if (apiKey == null || apiKey.isEmpty()) {
+                if (config.getProvider().requiresApiKey() &&
+                        (config.getApiKey() == null || config.getApiKey().isEmpty())) {
                     MessageDialog.openError(window.getShell(), "Configuration Error",
-                            "Google AI API Key is not configured.");
+                            "LLM API Key is not configured for " + config.getProvider().getDisplayName() + ".");
                     return null;
                 }
 
@@ -138,16 +143,17 @@ public class AnalyzeWithAiHandler extends AbstractHandler {
                     // simple logic for this step
                     // or better, use a Job to not block UI.
 
-                    final String prompt = "Analyze this ABAP feed entry:\n\nTitle: " + title + "\n\nContent:\n"
-                            + content;
+                    IPreferenceStore store = new ScopedPreferenceStore(InstanceScope.INSTANCE, "com.keksss.abap.ai.ui");
+                    String systemPrompt = store.getString(PreferenceConstants.P_DUMP_ANALYZER_PROMPT);
+                    final String prompt = systemPrompt.replace("{title}", title).replace("{dump_content}", content);
                     final String finalTitle = title;
 
                     new org.eclipse.core.runtime.jobs.Job("AI Analysis") {
                         @Override
                         protected org.eclipse.core.runtime.IStatus run(
                                 org.eclipse.core.runtime.IProgressMonitor monitor) {
-                            com.keksss.abap.ai.core.GoogleAiClient client = new com.keksss.abap.ai.core.GoogleAiClient();
-                            com.keksss.abap.ai.core.AnalysisResult result = client.analyzeText(apiKey, prompt);
+                            com.keksss.abap.ai.core.LlmClient client = new com.keksss.abap.ai.core.LlmClient();
+                            com.keksss.abap.ai.core.AnalysisResult result = client.analyzeText(prompt);
 
                             window.getShell().getDisplay().asyncExec(() -> {
                                 if (result.isSuccess()) {
