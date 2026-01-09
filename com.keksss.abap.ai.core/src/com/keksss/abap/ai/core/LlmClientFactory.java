@@ -1,5 +1,6 @@
 package com.keksss.abap.ai.core;
 
+import dev.langchain4j.http.client.jdk.JdkHttpClientBuilder;
 import dev.langchain4j.model.chat.ChatLanguageModel;
 import dev.langchain4j.model.googleai.GoogleAiGeminiChatModel;
 import dev.langchain4j.model.openai.OpenAiChatModel;
@@ -115,6 +116,7 @@ public class LlmClientFactory {
             }
 
             return OllamaChatModel.builder()
+                    .httpClientBuilder(new JdkHttpClientBuilder())
                     .baseUrl(baseUrl)
                     .modelName(config.getModel())
                     .temperature(config.getTemperature())

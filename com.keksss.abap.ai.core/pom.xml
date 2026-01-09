@@ -111,6 +111,20 @@
                                     <version>1.9.20</version>
                                     <outputDirectory>${project.basedir}/lib</outputDirectory>
                                 </artifactItem>
+                                <!-- LangChain4j HTTP Client JDK - Required by langchain4j-ollama for SSE support -->
+                                <artifactItem>
+                                    <groupId>dev.langchain4j</groupId>
+                                    <artifactId>langchain4j-http-client-jdk</artifactId>
+                                    <version>1.0.0-beta1</version>
+                                    <outputDirectory>${project.basedir}/lib</outputDirectory>
+                                </artifactItem>
+                                <!-- LangChain4j HTTP Client - Common HTTP client interfaces -->
+                                <artifactItem>
+                                    <groupId>dev.langchain4j</groupId>
+                                    <artifactId>langchain4j-http-client</artifactId>
+                                    <version>1.0.0-beta1</version>
+                                    <outputDirectory>${project.basedir}/lib</outputDirectory>
+                                </artifactItem>
                             </artifactItems>
                         </configuration>
                     </execution>

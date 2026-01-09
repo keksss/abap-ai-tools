@@ -45,6 +45,8 @@ Bundle-ClassPath: .,
  lib/gson-2.10.1.jar,
  lib/slf4j-api-2.0.16.jar,
  lib/opennlp-tools-1.9.4.jar,
- lib/jspecify-1.0.0.jar
+ lib/jspecify-1.0.0.jar,
+ lib/langchain4j-http-client-1.0.0-beta1.jar,
+ lib/langchain4j-http-client-jdk-1.0.0-beta1.jar
 DynamicImport-Package: *
 Bundle-ActivationPolicy: lazy
