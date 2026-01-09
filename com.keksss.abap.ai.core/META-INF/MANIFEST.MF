@@ -17,14 +17,12 @@ Export-Package: com.keksss.abap.ai.core,
  com.knuddels.jtokkit,
  com.google.gson,
  org.slf4j
-Bundle-Activator: com.keksss.abap.ai.core.Activator
 Bundle-Vendor: KEKSSS
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.equinox.preferences,
  org.eclipse.osgi
 Bundle-RequiredExecutionEnvironment: JavaSE-21
 Automatic-Module-Name: com.keksss.abap.ai.core
-Import-Package: org.osgi.framework
 Bundle-ClassPath: .,
  lib/langchain4j-1.0.0-beta1.jar,
  lib/langchain4j-core-1.0.0-beta1.jar,
@@ -35,6 +33,7 @@ Bundle-ClassPath: .,
  lib/openai4j-0.27.0.jar,
  lib/jtokkit-1.1.0.jar,
  lib/okhttp-4.12.0.jar,
+ lib/okhttp-sse-4.12.0.jar,
  lib/okio-jvm-3.6.0.jar,
  lib/retrofit-2.9.0.jar,
  lib/converter-gson-2.9.0.jar,

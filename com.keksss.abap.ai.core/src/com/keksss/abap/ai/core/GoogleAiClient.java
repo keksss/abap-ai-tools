@@ -1,8 +1,7 @@
 package com.keksss.abap.ai.core;
 
 import dev.langchain4j.model.googleai.GoogleAiGeminiChatModel;
-import dev.langchain4j.data.message.AiMessage;
-import dev.langchain4j.model.output.Response;
+
 import dev.langchain4j.model.chat.ChatLanguageModel;
 
 import java.io.BufferedReader;
@@ -51,7 +50,7 @@ public class GoogleAiClient {
                     .build();
 
             // Generate response using LangChain4j
-            String result = model.generate(prompt);
+            String result = model.chat(prompt);
 
             if (result == null || result.trim().isEmpty()) {
                 return AnalysisResult.failure("AI returned empty response.");

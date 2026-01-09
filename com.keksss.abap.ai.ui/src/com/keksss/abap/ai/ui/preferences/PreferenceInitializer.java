@@ -16,22 +16,6 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 	public void initializeDefaultPreferences() {
 		IPreferenceStore store = new ScopedPreferenceStore(InstanceScope.INSTANCE, Activator.PLUGIN_ID);
 
-		// ========== Migration from old preferences ==========
-		// Check if user has old settings and migrate them
-		@SuppressWarnings("deprecation")
-		String oldApiKey = store.getString(PreferenceConstants.P_GOOGLE_AI_API_KEY);
-		@SuppressWarnings("deprecation")
-		String oldModel = store.getString(PreferenceConstants.P_GOOGLE_AI_MODEL);
-
-		// If old settings exist and new ones don't, migrate
-		if (oldApiKey != null && !oldApiKey.isEmpty() &&
-				store.getString(PreferenceConstants.P_LLM_API_KEY).isEmpty()) {
-			store.setValue(PreferenceConstants.P_LLM_PROVIDER, "GOOGLE_AI");
-			store.setValue(PreferenceConstants.P_LLM_API_KEY, oldApiKey);
-			store.setValue(PreferenceConstants.P_LLM_MODEL,
-					oldModel != null && !oldModel.isEmpty() ? oldModel : "gemini-1.5-flash");
-		}
-
 		// ========== New Multi-Provider Defaults ==========
 		store.setDefault(PreferenceConstants.P_LLM_PROVIDER, "GOOGLE_AI");
 		store.setDefault(PreferenceConstants.P_LLM_API_KEY, "");
@@ -39,9 +23,6 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 		store.setDefault(PreferenceConstants.P_LLM_BASE_URL, "");
 		store.setDefault(PreferenceConstants.P_LLM_TEMPERATURE, 0.7);
 		store.setDefault(PreferenceConstants.P_LLM_MAX_TOKENS, 2048);
-
-		// ========== Legacy Defaults (for backward compatibility) ==========
-		store.setDefault(PreferenceConstants.P_GOOGLE_AI_API_KEY, "");
 
 		// ========== Dump Analyzer Prompt ==========
 		StringBuilder defaultPrompt = new StringBuilder();
@@ -56,6 +37,7 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 		defaultPrompt.append("{dump_content}");
 		defaultPrompt.append("\n---\n\n");
 		defaultPrompt.append("Provide a clear, concise analysis that would help a developer resolve this issue.");
+		defaultPrompt.append("Form the answer as HTML document.");
 
 		store.setDefault(PreferenceConstants.P_DUMP_ANALYZER_PROMPT, defaultPrompt.toString());
 	}
