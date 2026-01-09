@@ -1,8 +1,9 @@
 package com.keksss.abap.ai.core;
 
-import com.google.genai.Client;
-import com.google.genai.types.GenerateContentConfig;
-import com.google.genai.types.GenerateContentResponse;
+import dev.langchain4j.model.googleai.GoogleAiGeminiChatModel;
+import dev.langchain4j.data.message.AiMessage;
+import dev.langchain4j.model.output.Response;
+import dev.langchain4j.model.chat.ChatLanguageModel;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -11,16 +12,17 @@ import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import org.json.JSONArray;
-import org.json.JSONObject;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonArray;
 
 /**
- * Client for interacting with Google AI Gemini API using the new Java SDK
+ * Client for interacting with Google AI Gemini API using LangChain4j
  */
 public class GoogleAiClient {
 
     /**
-     * Analyzes text using Google AI Gemini model
+     * Analyzes text using Google AI Gemini model via LangChain4j
      * 
      * @param apiKey Google AI API key
      * @param prompt The prompt/text to analyze
@@ -38,26 +40,18 @@ public class GoogleAiClient {
         String modelName = PreferenceHelper.getGoogleAiModel();
 
         try {
-            // Initialize Client
-            Client client = Client.builder()
+            // Initialize LangChain4j GoogleAiGeminiChatModel
+            ChatLanguageModel model = GoogleAiGeminiChatModel.builder()
                     .apiKey(apiKey)
-                    .build();
-
-            // Configure generation
-            GenerateContentConfig config = GenerateContentConfig.builder()
-                    .temperature(0.7f)
-                    .topP(0.95f)
-                    .topK(40.0f)
+                    .modelName(modelName)
+                    .temperature(0.7)
+                    .topP(0.95)
+                    .topK(40)
                     .maxOutputTokens(2048)
                     .build();
 
-            // Generate response
-            GenerateContentResponse response = client.models.generateContent(
-                    modelName,
-                    prompt,
-                    config);
-
-            String result = response.text();
+            // Generate response using LangChain4j
+            String result = model.generate(prompt);
 
             if (result == null || result.trim().isEmpty()) {
                 return AnalysisResult.failure("AI returned empty response.");
@@ -66,7 +60,7 @@ public class GoogleAiClient {
             return AnalysisResult.success(result);
 
         } catch (Exception e) {
-            String errorMsg = "Error calling Google AI API: " + e.getMessage();
+            String errorMsg = "Error calling Google AI API via LangChain4j: " + e.getMessage();
             System.err.println(errorMsg);
             e.printStackTrace();
             return AnalysisResult.failure(errorMsg);
@@ -84,15 +78,7 @@ public class GoogleAiClient {
         List<String> models = new ArrayList<>();
 
         try {
-            // Using direct REST API for listing models as SDK might not expose it simply
-            // yet or to match example logic
-            // The example GenAiTester used direct HTTP, let's stick to that for reliability
-            // or use SDK if possible.
-            // Documentation says client.models.list() might exist but let's follow the
-            // robust example pattern for now
-            // since we don't have full javadoc for the new SDK handy, relying on the
-            // working example is safer.
-
+            // Using direct REST API for listing models
             URL url = URI.create("https://generativelanguage.googleapis.com/v1beta/models?key=" + apiKey).toURL();
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("GET");
@@ -109,13 +95,16 @@ public class GoogleAiClient {
                 }
                 reader.close();
 
-                JSONObject jsonResponse = new JSONObject(response.toString());
+                // Use Gson for JSON parsing
+                Gson gson = new Gson();
+                JsonObject jsonResponse = gson.fromJson(response.toString(), JsonObject.class);
+
                 if (jsonResponse.has("models")) {
-                    JSONArray modelsArray = jsonResponse.getJSONArray("models");
-                    for (int i = 0; i < modelsArray.length(); i++) {
-                        JSONObject model = modelsArray.getJSONObject(i);
+                    JsonArray modelsArray = jsonResponse.getAsJsonArray("models");
+                    for (int i = 0; i < modelsArray.size(); i++) {
+                        JsonObject model = modelsArray.get(i).getAsJsonObject();
                         if (model.has("name")) {
-                            String name = model.getString("name");
+                            String name = model.get("name").getAsString();
                             if (name.startsWith("models/")) {
                                 name = name.substring(7);
                             }
