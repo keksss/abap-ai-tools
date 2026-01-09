@@ -8,13 +8,7 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
-import java.net.URI;
-import org.eclipse.core.filesystem.EFS;
-import org.eclipse.core.filesystem.IFileStore;
-import com.keksss.abap.ai.ui.preferences.PreferenceConstants;
-import org.eclipse.core.runtime.preferences.InstanceScope;
-import org.eclipse.ui.preferences.ScopedPreferenceStore;
-import org.eclipse.jface.preference.IPreferenceStore;
+
 
 public class AnalyzeWithAiHandler extends AbstractHandler {
 
@@ -143,17 +137,16 @@ public class AnalyzeWithAiHandler extends AbstractHandler {
                     // simple logic for this step
                     // or better, use a Job to not block UI.
 
-                    IPreferenceStore store = new ScopedPreferenceStore(InstanceScope.INSTANCE, "com.keksss.abap.ai.ui");
-                    String systemPrompt = store.getString(PreferenceConstants.P_DUMP_ANALYZER_PROMPT);
-                    final String prompt = systemPrompt.replace("{title}", title).replace("{dump_content}", content);
                     final String finalTitle = title;
+                    final String finalContent = content;
 
                     new org.eclipse.core.runtime.jobs.Job("AI Analysis") {
                         @Override
                         protected org.eclipse.core.runtime.IStatus run(
                                 org.eclipse.core.runtime.IProgressMonitor monitor) {
-                            com.keksss.abap.ai.core.LlmClient client = new com.keksss.abap.ai.core.LlmClient();
-                            com.keksss.abap.ai.core.AnalysisResult result = client.analyzeText(prompt);
+                            com.keksss.abap.ai.core.AbapDumpAnalyzer analyzer = new com.keksss.abap.ai.core.AbapDumpAnalyzer();
+                            com.keksss.abap.ai.core.AnalysisResult result = analyzer.analyzeDump(finalTitle,
+                                    finalContent);
 
                             window.getShell().getDisplay().asyncExec(() -> {
                                 if (result.isSuccess()) {
@@ -163,21 +156,48 @@ public class AnalyzeWithAiHandler extends AbstractHandler {
                                     String timeStr = now
                                             .format(java.time.format.DateTimeFormatter.ofPattern("HH:mm:ss"));
 
-                                    String html = "<html><style>" +
-                                            "body { font-family: sans-serif; padding: 10px; }" +
-                                            ".header { color: #555; font-size: 0.9em; margin-bottom: 15px; }" +
-                                            ".title { font-size: 1.2em; font-weight: bold; margin-bottom: 20px; }" +
-                                            ".content { border: 1px solid #ccc; padding: 15px; background-color: #f9f9f9; border-radius: 5px; }"
-                                            +
-                                            "</style><body>" +
-                                            "<div class='header'>Data: " + dateStr + ", Time: " + timeStr + "</div>" +
-                                            "<div class='title'>" + finalTitle + "</div>" +
-                                            "<div class='content'>" + result.getAnalysisText().replace("\n", "<br/>")
-                                            + "</div>"
-                                            +
-                                            "</body></html>";
+                                    String analysisText = result.getAnalysisText();
 
-                                    view.setContent(html);
+                                    // Check if the content is predominantly HTML (full document)
+                                    boolean isHtml = false;
+                                    if (analysisText != null) {
+                                        String trimmed = analysisText.trim().toLowerCase();
+                                        isHtml = trimmed.startsWith("<!doctype") || trimmed.startsWith("<html");
+                                    }
+
+                                    if (isHtml) {
+                                        // It is a full HTML document.
+                                        // We inject the timestamp header for consistency but preserve the HTML
+                                        // structure.
+                                        String timestampHtml = "<div style='font-family: sans-serif; color: #555; font-size: 0.9em; padding: 10px; border-bottom: 1px solid #eee; background-color: #fcfcfc;'>Analysis Date: "
+                                                + dateStr + ", Time: " + timeStr + "</div>";
+
+                                        // Inject after <body> tag
+                                        String finalHtml = analysisText.replaceFirst("(?i)<body>",
+                                                "<body>" + timestampHtml);
+                                        // If replacement didn't happen (no body tag), just use original
+                                        if (finalHtml.equals(analysisText)) {
+                                            finalHtml = analysisText;
+                                        }
+                                        view.setContent(finalHtml);
+                                    } else {
+                                        // Treat as plain text
+                                        String html = "<html><style>" +
+                                                "body { font-family: sans-serif; padding: 10px; }" +
+                                                ".header { color: #555; font-size: 0.9em; margin-bottom: 15px; }" +
+                                                ".title { font-size: 1.2em; font-weight: bold; margin-bottom: 20px; }" +
+                                                ".content { border: 1px solid #ccc; padding: 15px; background-color: #f9f9f9; border-radius: 5px; }"
+                                                +
+                                                "</style><body>" +
+                                                "<div class='header'>Date: " + dateStr + ", Time: " + timeStr + "</div>"
+                                                +
+                                                "<div class='content'>"
+                                                + (analysisText != null ? analysisText.replace("\n", "<br/>") : "")
+                                                + "</div>"
+                                                +
+                                                "</body></html>";
+                                        view.setContent(html);
+                                    }
                                 } else {
                                     view.setContent("<html><body><h3>Error</h3><p>" + result.getErrorMessage()
                                             + "</p></body></html>");

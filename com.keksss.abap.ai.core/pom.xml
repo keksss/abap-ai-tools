@@ -59,6 +59,13 @@
                                     <version>3.6.0</version>
                                     <outputDirectory>${project.basedir}/lib</outputDirectory>
                                 </artifactItem>
+                                <!-- OkHttp SSE - Required by langchain4j-anthropic for Server-Sent Events -->
+                                <artifactItem>
+                                    <groupId>com.squareup.okhttp3</groupId>
+                                    <artifactId>okhttp-sse</artifactId>
+                                    <version>4.12.0</version>
+                                    <outputDirectory>${project.basedir}/lib</outputDirectory>
+                                </artifactItem>
                                 <!-- Retrofit - Required by openai4j -->
                                 <artifactItem>
                                     <groupId>com.squareup.retrofit2</groupId>

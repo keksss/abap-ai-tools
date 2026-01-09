@@ -121,7 +121,7 @@ public class AbapAiPreferencePage extends PreferencePage implements IWorkbenchPr
 		Label modelLabel = new Label(container, SWT.NONE);
 		modelLabel.setText("Model:");
 
-		modelCombo = new Combo(container, SWT.DROP_DOWN | SWT.READ_ONLY);
+		modelCombo = new Combo(container, SWT.DROP_DOWN);
 		GridData modelData = new GridData(SWT.FILL, SWT.CENTER, true, false);
 		modelCombo.setLayoutData(modelData);
 

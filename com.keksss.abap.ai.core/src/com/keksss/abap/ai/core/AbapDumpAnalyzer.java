@@ -17,7 +17,7 @@ public class AbapDumpAnalyzer {
      * @param dumpContent The ABAP dump content to analyze
      * @return Analysis result containing AI insights
      */
-    public AnalysisResult analyzeDump(String dumpContent) {
+    public AnalysisResult analyzeDump(String title, String dumpContent) {
         // Get LLM configuration
         LlmConfig config = PreferenceHelper.getLlmConfig();
 
@@ -31,13 +31,13 @@ public class AbapDumpAnalyzer {
         }
 
         // Construct a specialized prompt for ABAP dump analysis
-        String prompt = constructAnalysisPrompt(dumpContent);
+        String prompt = constructAnalysisPrompt(title, dumpContent);
 
         // Call LLM through client
         AnalysisResult result = aiClient.analyzeText(prompt);
 
         if (result.isSuccess()) {
-            return AnalysisResult.success(result.getAnalysisText() + "\n\nOriginal Dump Content:\n" + dumpContent);
+            return AnalysisResult.success(result.getAnalysisText() );
         }
 
         return result;
@@ -46,12 +46,14 @@ public class AbapDumpAnalyzer {
     /**
      * Constructs a detailed prompt for ABAP dump analysis
      */
-    private String constructAnalysisPrompt(String dumpContent) {
+    private String constructAnalysisPrompt(String title, String dumpContent) {
         String customPrompt = PreferenceHelper.getDumpAnalyzerPrompt();
 
         if (customPrompt != null && !customPrompt.trim().isEmpty()) {
-            // Use custom prompt from preferences, replacing placeholder
-            return customPrompt.replace("{dump_content}", dumpContent);
+            // Use custom prompt from preferences, replacing placeholders
+            return customPrompt
+                    .replace("{title}", title != null ? title : "")
+                    .replace("{dump_content}", dumpContent);
         }
 
         // Fallback to hardcoded default if preference is missing (though Initializer
@@ -59,6 +61,9 @@ public class AbapDumpAnalyzer {
         StringBuilder prompt = new StringBuilder();
 
         prompt.append("You are an expert ABAP developer analyzing a runtime dump/error.\n\n");
+        if (title != null && !title.isEmpty()) {
+            prompt.append("Dump Title: ").append(title).append("\n");
+        }
         prompt.append("Please analyze the following ABAP dump and provide:\n");
         prompt.append("1. Root cause analysis\n");
         prompt.append("2. Possible solutions or fixes\n");

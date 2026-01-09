@@ -43,7 +43,7 @@ public class LlmClient {
             ChatLanguageModel model = LlmClientFactory.createChatModel(config);
 
             // Generate response using LangChain4j
-            String result = model.generate(prompt);
+            String result = model.chat(prompt);
 
             if (result == null || result.trim().isEmpty()) {
                 return AnalysisResult.failure("AI returned empty response.");
@@ -198,13 +198,61 @@ public class LlmClient {
     /**
      * Return predefined Anthropic models (API doesn't provide list endpoint)
      */
-    private List<String> fetchAnthropicModels() {
+    /**
+     * Fetch available Anthropic models from API
+     */
+    private List<String> fetchAnthropicModels() throws CoreAiException {
+        LlmConfig config = PreferenceHelper.getLlmConfig();
+        String apiKey = config.getApiKey();
+
+        if (apiKey == null || apiKey.trim().isEmpty()) {
+            throw new CoreAiException(LlmProvider.ANTHROPIC, "API key is required to fetch models");
+        }
+
         List<String> models = new ArrayList<>();
-        models.add("claude-3-5-sonnet-20241022");
-        models.add("claude-3-5-haiku-20241022");
-        models.add("claude-3-opus-20240229");
-        models.add("claude-3-sonnet-20240229");
-        models.add("claude-3-haiku-20240307");
+        try {
+            URL url = URI.create("https://api.anthropic.com/v1/models").toURL();
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("GET");
+            connection.setRequestProperty("x-api-key", apiKey);
+            connection.setRequestProperty("anthropic-version", "2023-06-01");
+            connection.setRequestProperty("Content-Type", "application/json");
+
+            int responseCode = connection.getResponseCode();
+            if (responseCode == HttpURLConnection.HTTP_OK) {
+                BufferedReader reader = new BufferedReader(
+                        new InputStreamReader(connection.getInputStream()));
+                StringBuilder response = new StringBuilder();
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    response.append(line);
+                }
+                reader.close();
+
+                Gson gson = new Gson();
+                JsonObject jsonResponse = gson.fromJson(response.toString(), JsonObject.class);
+
+                if (jsonResponse.has("data")) {
+                    JsonArray modelsArray = jsonResponse.getAsJsonArray("data");
+                    for (int i = 0; i < modelsArray.size(); i++) {
+                        JsonObject model = modelsArray.get(i).getAsJsonObject();
+                        if (model.has("id")) {
+                            models.add(model.get("id").getAsString());
+                        }
+                    }
+                }
+            } else {
+                throw new CoreAiException(LlmProvider.ANTHROPIC, "HTTP " + responseCode);
+            }
+            connection.disconnect();
+
+        } catch (CoreAiException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new CoreAiException(LlmProvider.ANTHROPIC,
+                    "Failed to fetch models: " + e.getMessage(), e);
+        }
+
         return models;
     }
 
